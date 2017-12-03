@@ -18,37 +18,44 @@ static NSSet *_urlsForHE = nil;
 + (void)initForcedHE:(NSString *)wellKnownConfigurationEndpoint {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     
-    [self fetchWellknown:wellKnownConfigurationEndpoint];
+    [self fetchWellknown:wellKnownConfigurationEndpoint completion:nil];
 }
 
-+ (void)fetchWellknown:(NSString *)wellKnownConfigurationEndpoint {
++ (void)fetchWellknown:(NSString *)wellKnownConfigurationEndpoint completion:(void(^)(BOOL))completionHandler {
     NSURL *URL = [NSURL URLWithString:wellKnownConfigurationEndpoint];
-    
+
     __block NSDictionary *json;
     
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:[NSOperationQueue mainQueue]];
-    [[session dataTaskWithURL:URL
-            completionHandler:^(NSData *data,
-                                NSURLResponse *response,
-                                NSError *error) {
-                if (error) {
-                    NSLog(@"Error fetching data from the endpoint");
-                } else {
-                    if (data) {
-                        NSError *serializationError = nil;
-                        json = [NSJSONSerialization JSONObjectWithData:data
-                                                               options:0
-                                                                 error:&serializationError];
-                        if (serializationError != nil) {
-                            NSLog(@"Error serializing the data");
-                        } else {
-                            @synchronized(self) {
-                                _urlsForHE = json[@"network_authentication_target_urls"];
-                            }
-                        }
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    [[session dataTaskWithURL:URL completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                if (error || !data) {
+                    NSLog(@"Error fetching data from the endpoint %@", [error localizedDescription]);
+                    if (completionHandler) {
+                        completionHandler(false);
                     }
+                    return;
                 }
-            }] resume];
+                
+                NSError *serializationError = nil;
+                json = [NSJSONSerialization JSONObjectWithData:data
+                                                       options:0
+                                                         error:&serializationError];
+                if (serializationError) {
+                    NSLog(@"Error serializing the data %@", [serializationError localizedDescription]);
+                    if (completionHandler) {
+                        completionHandler(false);
+                    }
+                    return;
+                }
+                
+                @synchronized(self) {
+                    _urlsForHE = json[@"network_authentication_target_urls"];
+                }
+                
+                if (completionHandler) {
+                    completionHandler(true);
+                }
+    }] resume];
 }
 
 + (bool)isInterfaceEnabled:(NSString *)iface {
@@ -191,7 +198,9 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
         if (responseCode != 303 && responseCode != 302 && responseCode != 301) {
             char *pszContentType;
             curl_easy_getinfo(curl, CURLINFO_CONTENT_TYPE, &pszContentType);
-            resDict =  @{@"responseCode" : [NSNumber numberWithLong:responseCode], @"contentType" : [NSString stringWithUTF8String:pszContentType], @"data": data};
+            resDict =  @{@"responseCode" : [NSNumber numberWithLong:responseCode],
+                         @"contentType" : [NSString stringWithUTF8String:pszContentType],
+                         @"data": data};
             break;
         }
         
