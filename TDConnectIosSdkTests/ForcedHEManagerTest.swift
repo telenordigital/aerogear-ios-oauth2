@@ -29,54 +29,55 @@ func setupForcedStubWithNSURLSessionDefaultConfiguration() {
 }
 
 class ForcedHEManagerTestModuleTests: XCTestCase {
-    
+
     override func setUp() {
         super.setUp()
         setupForcedStubWithNSURLSessionDefaultConfiguration()
     }
-    
+
     override func tearDown() {
         super.tearDown()
         OHHTTPStubs.removeAllStubs()
     }
-    
+
     func testGetRemoteConfiguration() {
         let expectation = self.expectation(description: "GetRemoteConfiguration")
         let baseUrl = "https://connect.staging.telenordigital.com/oauth"
         let url = String(format: "%@", "\(baseUrl)/.well-known/openid-configuration")
-        
+
         ForcedHEManager.fetchWellknown(url) { (success) in
             XCTAssert(success)
             expectation.fulfill()
         }
-        
+
         waitForExpectations(timeout: 10, handler: nil)
     }
-    
+
     func testGetRemoteConfigurationBadUrl() {
         let expectation = self.expectation(description: "GetRemoteConfigurationBadUrl")
         let baseUrl = "https://connect.staging.telenordigital.com/oauth"
         let url = String(format: "%@", "\(baseUrl)/.well-known/openid-configuration-bad-url")
-        
+
         ForcedHEManager.fetchWellknown(url) { (success) in
             XCTAssert(!success)
             expectation.fulfill()
         }
-        
+
         waitForExpectations(timeout: 10, handler: nil)
     }
-    
+
     func testGetRemoteConfigurationTimeout() {
         let expectation = self.expectation(description: "GetRemoteConfigurationTimeout")
         let baseUrl = "https://connect.staging.telenordigital.com/oauth"
         let url = String(format: "%@", "\(baseUrl)")
-        
+
         ForcedHEManager.fetchWellknown(url) { (success) in
             XCTAssert(!success)
             expectation.fulfill()
         }
-        
+
         waitForExpectations(timeout: 10, handler: nil)
     }
-    
+
 }
+
