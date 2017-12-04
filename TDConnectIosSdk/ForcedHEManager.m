@@ -26,7 +26,7 @@ static NSSet *_urlsForHE = nil;
 
     __block NSDictionary *json;
     
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    NSURLSession *session = [NSURLSession sharedSession];
     [[session dataTaskWithURL:URL completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
                 if (error || !data) {
                     NSLog(@"Error fetching data from the endpoint %@", [error localizedDescription]);
