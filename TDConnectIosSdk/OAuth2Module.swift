@@ -354,7 +354,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             UIApplication.shared.tdcTopViewController?.present(webViewController, animated: true, completion: nil)
         } else if browserType == .webAuthenticationSession {
             guard #available(iOS 12.0, *) else {
-                fatalError("Inconsitant iOS version between here and getBrowserTypeToUse()")
+                fatalError("Inconstant iOS version between here and getBrowserTypeToUse()")
             }
             self.authenticationSession = ASWebAuthenticationSession(url: url, callbackURLScheme: nil, completionHandler: { (successUrl: URL?, error: Error?) in
                 self.handleCallback(successUrl, error: error, state: state, completionHandler: completionHandler)
@@ -362,7 +362,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             (self.authenticationSession as! ASWebAuthenticationSession).start()
         } else if browserType == .safariAuthenticationSession {
             guard #available(iOS 11.0, *) else {
-                fatalError("Inconsitant iOS version between here and getBrowserTypeToUse()")
+                fatalError("Inconstant iOS version between here and getBrowserTypeToUse()")
             }
             self.authenticationSession = SFAuthenticationSession(url: url, callbackURLScheme: nil, completionHandler: { (successUrl: URL?, error: Error?) in
                 self.handleCallback(successUrl, error: error, state: state, completionHandler: completionHandler)
