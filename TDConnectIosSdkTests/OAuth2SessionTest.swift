@@ -60,5 +60,20 @@ class OAuth2SessionTests: XCTestCase {
         XCTAssert(session.refreshToken ==  nil, "session should be without refresh token")
         XCTAssert(session.accessTokenExpirationDate ==  nil, "session should be without access token expiration date")
     }
+    
+    func testRefreshTokenIsNotExpiredReturnsTrueWhenThereIsARefreshToken() {
+        let session = UntrustedMemoryOAuth2Session(accountId: "accountID", accessToken: "ACCESS", accessTokenExpirationDate: Date(), refreshToken: "REFRESH")
+        XCTAssertTrue(session.refreshTokenIsNotExpired())
+    }
+    
+    func testRefreshTokenIsNotExpiredReturnsTrueWhenThereIsARefreshTokenExpInFuture() {
+        let session = UntrustedMemoryOAuth2Session(accountId: "accountID", accessToken: "ACCESS", accessTokenExpirationDate: Date(), refreshToken: "REFRESH", refreshTokenExpirationDate: Date(timeIntervalSinceNow: 1000))
+        XCTAssertTrue(session.refreshTokenIsNotExpired())
+    }
+    
+    func testRefreshTokenIsNotExpiredReturnsFalseWhenThereIsARefreshTokenExpInPast() {
+        let session = UntrustedMemoryOAuth2Session(accountId: "accountID", accessToken: "ACCESS", accessTokenExpirationDate: Date(), refreshToken: "REFRESH", refreshTokenExpirationDate: Date(timeIntervalSinceNow: -1000))
+        XCTAssertFalse(session.refreshTokenIsNotExpired())
+    }
 
 }
