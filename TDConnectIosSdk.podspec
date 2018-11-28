@@ -14,4 +14,5 @@ Pod::Spec.new do |s|
   s.framework = 'Security'
   s.dependency 'AeroGearHttp'
   s.dependency 'JSONWebToken'
+  s.resources = ["TDConnectIosSdk/*.xib", "TDConnectIosSdk/**/*.strings", "TDConnectIosSdk/*.xcassets"]
 end

@@ -1,0 +1,11 @@
+/*
+ Strings.strings
+ TelenorConnectIosHelloWorld
+ 
+ Created by Lars Solvoll Tønder on 19/11/2018.
+ Copyright © 2018 Telenor Digital. All rights reserved.
+ */
+
+"cancel" = "Avbryt";
+"use_connect_id" = "Bruk Connect ID";
+"please_identify" = "Vennligst identifiser deg for å logge inn";

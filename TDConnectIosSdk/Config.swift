@@ -137,7 +137,7 @@ open class Config {
     for authorization code grant flow.
     */
     open var isWebView: Bool = false
-    
+        
     /**
     Boolean to indicate whether the client is a public client (true) or a confidential client (false).
     A public client will exchange the authorization code for tokens, on successful authentication and authorization.
