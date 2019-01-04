@@ -44,9 +44,9 @@ enum AuthorizationState {
 }
 
 public enum OAuth2Error: Error {
-    case MissingRefreshToken
-    case UnexpectedResponse(String)
-    case UnequalStateParameter(String)
+    case missingRefreshToken
+    case unexpectedResponse(String)
+    case unequalStateParameter(String)
 }
 
 public enum BrowserType {
@@ -57,14 +57,14 @@ public enum BrowserType {
     case safariExternalBrowser
     case unknown
 
-    var description : String {
+    var description: String {
         switch self {
-            case .webView: return "web-view";
-            case .safariViewController: return "safari-view-controller";
-            case .webAuthenticationSession: return "web-authentication-session";
-            case .safariAuthenticationSession: return "safari-authentication-session";
-            case .safariExternalBrowser: return "safari-external-browser";
-            case .unknown: return "unknown";
+            case .webView: return "web-view"
+            case .safariViewController: return "safari-view-controller"
+            case .webAuthenticationSession: return "web-authentication-session"
+            case .safariAuthenticationSession: return "safari-authentication-session"
+            case .safariExternalBrowser: return "safari-external-browser"
+            case .unknown: return "unknown"
         }
     }
 }
@@ -92,12 +92,11 @@ fileprivate extension UIApplication {
     }
 }
 
-
 /**
 Parent class of any OAuth2 module implementing generic OAuth2 authorization flow.
 */
 open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
-    
+
     public let config: Config
     let jsonResponseSerializerWithDate: JsonResponseSerializerWithDate?
     open var http: Http
@@ -127,8 +126,8 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
     :returns: the newly initialized OAuth2Module.
     */
     public required init(config: Config, session: OAuth2Session? = nil, requestSerializer: RequestSerializer = HttpRequestSerializer(), responseSerializer: ResponseSerializer = JsonResponseSerializerWithDate()) {
-        self.tsSdkInitiliazation = Int64(NSDate().timeIntervalSince1970 * 1000);
-        self.advertisingId = "";
+        self.tsSdkInitiliazation = Int64(NSDate().timeIntervalSince1970 * 1000)
+        self.advertisingId = ""
         self.jsonResponseSerializerWithDate = responseSerializer as? JsonResponseSerializerWithDate
 
         if (config.accountId == nil) {
@@ -141,14 +140,14 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         }
 
         if (config.optionalParams == nil) {
-            config.optionalParams = [String: String]();
+            config.optionalParams = [String: String]()
         }
 
         self.config = config
-        
-        self.http = Http(baseURL: config.baseURL, requestSerializer: requestSerializer, responseSerializer:  responseSerializer)
+
+        self.http = Http(baseURL: config.baseURL, requestSerializer: requestSerializer, responseSerializer: responseSerializer)
         self.state = .authorizationStateUnknown
-        self.browserType = .unknown;
+        self.browserType = .unknown
 
         super.init()
 
@@ -167,29 +166,29 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
                 ForcedHEManager.setHEUrls(Set<String>(heUrls))
             }
             if let analyticsEndpoint = unwrappedResponse["telenordigital_sdk_analytics_endpoint"] as? String {
-                self.analyticsEndpoint = analyticsEndpoint + "/V1/ios";
+                self.analyticsEndpoint = analyticsEndpoint + "/V1/ios"
             }
-        });
+        })
     }
 
     func getBrowserTypeToUse() -> BrowserType {
         if self.config.isWebView {
-            return .webView;
+            return .webView
         }
         if #available(iOS 12.0, *) {
-            return .webAuthenticationSession;
+            return .webAuthenticationSession
         }
         if #available(iOS 11.0, *) {
-            return .safariAuthenticationSession;
+            return .safariAuthenticationSession
         }
         if #available(iOS 9.0, *) {
-            return .safariViewController;
+            return .safariViewController
         }
-        return .safariExternalBrowser;
+        return .safariExternalBrowser
     }
 
     // MARK: Public API - To be overriden if necessary by OAuth2 specific adapter
-    
+
     /**
     Request an authorization code.
 
@@ -201,7 +200,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         // can clear any pending authorization requests which are not completed properly,
         // that is a user switched into the app without Accepting or Cancelling the authorization
         // request in the external browser process.
-        applicationDidBecomeActiveNotificationObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: AGAppDidBecomeActiveNotification), object:nil, queue:nil, using: { (note: Notification!) -> Void in
+        applicationDidBecomeActiveNotificationObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: AGAppDidBecomeActiveNotification), object: nil, queue: nil, using: { (_: Notification!) -> Void in
             // check the state
             if (self.state == .authorizationStatePendingExternalApproval) {
                 // unregister
@@ -215,17 +214,17 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         self.state = .authorizationStatePendingExternalApproval
 
         // get the user agent we will use for authentication
-        self.browserType = getBrowserTypeToUse();
+        self.browserType = getBrowserTypeToUse()
 
         self.logSessionId = NSUUID().uuidString
 
-        let useForcedHeaderInjection = browserType == .webView && ForcedHEManager.isCellularEnabled() && ForcedHEManager.isWifiEnabled();
+        let useForcedHeaderInjection = browserType == .webView && ForcedHEManager.isCellularEnabled() && ForcedHEManager.isWifiEnabled()
         if (!ForcedHEManager.isCellularEnabled()) {
-            config.optionalParams!["prompt"] = "no_seam";
+            config.optionalParams!["prompt"] = "no_seam"
         }
         if (useForcedHeaderInjection) {
-            let mccMnc:String = OperatorInfo.id()
-            config.optionalParams!["login_hint"] = "MCCMNC:" + mccMnc;
+            let mccMnc: String = OperatorInfo.id()
+            config.optionalParams!["login_hint"] = "MCCMNC:" + mccMnc
             URLProtocol.registerClass(ForcedHEURLProtocol.self)
         }
 
@@ -237,7 +236,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             completionHandler(nil, error)
             return
         }
-        
+
         // register with the notification system in order to be notified when the 'authorization' process completes in the
         // external browser, and the oauth code is available so that we can then proceed to request the 'access_token'
         // from the server.
@@ -249,26 +248,26 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
 
         launchBrowser(url, state, completionHandler)
     }
-    
+
     func handleCallback(_ successUrl: URL?, error: Error?, state: String, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
         guard let successUrl = successUrl, error == nil else {
             self.callCompletion(success: nil, error: error as NSError?, completionHandler: completionHandler)
             return
         }
-        
+
         let stateFromRedirectUrl = self.parametersFrom(queryString: successUrl.query)["state"]
-        
+
         if stateFromRedirectUrl != state {
-            let error = OAuth2Error.UnequalStateParameter("The state parameter in the redirect url was not the same as the one sent to the auth server.") as NSError
+            let error = OAuth2Error.unequalStateParameter("The state parameter in the redirect url was not the same as the one sent to the auth server.") as NSError
             self.callCompletion(success: nil, error: error, completionHandler: completionHandler)
             return
         }
-        
+
         self.extractCode(fromUrl: successUrl, completionHandler: { (accessToken: AnyObject?, error: NSError?) in
             self.callCompletion(success: accessToken, error: error, completionHandler: completionHandler)
         })
     }
-    
+
     func callCompletion(success: AnyObject?, error: NSError?, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
         if browserType == .safariViewController || browserType == .webView {
             UIApplication.shared.tdcTopViewController?.dismiss( animated: true, completion: {
@@ -278,18 +277,18 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             completionHandler(success, error)
         }
     }
-    
+
     public class func getAuthUrl(config: Config, http: Http, state: String? = nil, logSessionId: String? = nil, browserType: BrowserType) throws -> URL {
         let optionalParamsEncoded = config.optionalParams?.keys.reduce("", { (current: String, key: String) -> String in
             return "\(current)&\(key.urlEncode())=\(config.optionalParams![key]!.urlEncode())"
         })
-        
+
         var version = "unknown"
         if let path = Bundle.main.path(forResource: "Info", ofType: "plist", inDirectory: "Frameworks/TDConnectIosSdk.framework") {
             if let dict = NSDictionary(contentsOfFile: path) {
                 let osVersion = ProcessInfo.processInfo.operatingSystemVersion
                 let podVersion = dict["CFBundleShortVersionString"] as! String
-                let browserTypeDesc = browserType.description;
+                let browserTypeDesc = browserType.description
                 version = "v\(podVersion)_\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)_\(browserTypeDesc)"
             }
         }
@@ -298,7 +297,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         if let optionalParamsEncoded = optionalParamsEncoded {
             params += optionalParamsEncoded
         }
-        
+
         if let claims = config.claims {
             do {
                 try params += OAuth2Module.getParam(claims: claims)
@@ -306,7 +305,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
                 throw error
             }
         }
-        
+
         if let state = state {
             params += "&state=\(state)"
         }
@@ -314,26 +313,26 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         if let lsi = logSessionId {
             params += "&log_session_id=\(lsi)"
         }
-        
-        guard let computedUrl = http.calculateURL(baseURL: config.baseURL, url:config.authzEndpoint) else {
-            let error = NSError(domain:AGAuthzErrorDomain, code:0, userInfo:["NSLocalizedDescriptionKey": "Malformatted URL."])
+
+        guard let computedUrl = http.calculateURL(baseURL: config.baseURL, url: config.authzEndpoint) else {
+            let error = NSError(domain: AGAuthzErrorDomain, code: 0, userInfo: ["NSLocalizedDescriptionKey": "Malformatted URL."])
             throw error
         }
-        
-        return URL(string:computedUrl.absoluteString + params)!
+
+        return URL(string: computedUrl.absoluteString + params)!
     }
-    
+
     public class func getParam(claims: Set<String>) throws -> String {
         let essentialClaims = claims.reduce([:], { (current: [String: Any], claim: String) -> [String: Any] in
             var newCurrent = current
             newCurrent[claim] = ["essential": true]
             return newCurrent
         })
-        
+
         let userinfoClaims = [
-            "userinfo" : essentialClaims
+            "userinfo": essentialClaims
         ]
-        
+
         var jsonClaims: Data
         do {
             jsonClaims = try JSONSerialization.data(withJSONObject: userinfoClaims, options: JSONSerialization.WritingOptions()) as Data
@@ -341,16 +340,16 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             print(error)
             throw error
         }
-       
+
         let jsonClaimsString = NSString(data: jsonClaims as Data, encoding: String.Encoding.utf8.rawValue)
         let encodedJson = (jsonClaimsString! as String).urlEncode()
         return "&claims=\(encodedJson)"
     }
-    
+
     fileprivate func launchBrowser(_ url: URL, _ state: String, _ completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
         if browserType == .webView || browserType == .unknown {
             let webViewController = OAuth2WebViewController()
-            webViewController.targetURL = url;
+            webViewController.targetURL = url
             UIApplication.shared.tdcTopViewController?.present(webViewController, animated: true, completion: nil)
         } else if browserType == .webAuthenticationSession {
             guard #available(iOS 12.0, *) else {
@@ -384,7 +383,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
     */
     open func refreshAccessToken(completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
         guard let unwrappedRefreshToken = self.oauth2Session.refreshToken else {
-            completionHandler(nil, OAuth2Error.MissingRefreshToken as NSError)
+            completionHandler(nil, OAuth2Error.missingRefreshToken as NSError)
             return
         }
 
@@ -392,22 +391,22 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         if (config.clientSecret != nil) {
             paramDict["client_secret"] = config.clientSecret!
         }
-        
+
         http.request(method: .post, path: config.refreshTokenEndpoint!, parameters: paramDict as [String : AnyObject]?, completionHandler: { (response, error) in
             if (error != nil) {
                 if error?.code == 400 {
                     self.oauth2Session.clearTokens()
                 }
-                
+
                 completionHandler(nil, error)
                 return
             }
-            
+
             guard let unwrappedResponse = response as? [String: AnyObject] else {
-                completionHandler(nil, OAuth2Error.UnexpectedResponse(response as! String) as NSError)
+                completionHandler(nil, OAuth2Error.unexpectedResponse(response as! String) as NSError)
                 return
             }
-            
+
             let accessToken: String = unwrappedResponse["access_token"] as! String
             let expiration = unwrappedResponse["expires_in"] as! NSNumber
             let exp: String = expiration.stringValue
@@ -415,10 +414,10 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             if let newRefreshToken = unwrappedResponse["refresh_token"] as? String {
                 refreshToken = newRefreshToken
             }
-            
+
             self.oauth2Session.save(accessToken: accessToken, refreshToken: refreshToken, accessTokenExpiration: exp, refreshTokenExpiration: nil, idToken: nil)
-            
-            completionHandler(unwrappedResponse["access_token"], nil);
+
+            completionHandler(unwrappedResponse["access_token"], nil)
         })
     }
 
@@ -436,7 +435,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             paramDict["advertisingId"] = advertisingId
         }
         if let tsSdkInitiliazation = self.tsSdkInitiliazation {
-            paramDict["tsSdkInitiliazation"] = String(tsSdkInitiliazation);
+            paramDict["tsSdkInitiliazation"] = String(tsSdkInitiliazation)
         }
         if let tsLoginButtonClicked = self.tsLoginButtonClicked {
             paramDict["tsLoginButtonClicked"] = String(tsLoginButtonClicked)
@@ -466,7 +465,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         if accessToken != nil {
             http.authzModule = self
         }
-        http.request(method: .post, path: analyticsEndpoint, parameters: paramDict as [String : AnyObject]?, completionHandler: { (response, error) in
+        http.request(method: .post, path: analyticsEndpoint, parameters: paramDict as [String : AnyObject]?, completionHandler: { (_, _) in
         })
     }
 
@@ -477,16 +476,16 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
     :param: completionHandler A block object to be executed when the request operation finishes.
     */
     open func exchangeAuthorizationCodeForAccessToken(code: String, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
-        var paramDict: [String: String] = ["code": code, "client_id": config.clientId, "redirect_uri": config.redirectURL, "grant_type":"authorization_code"]
+        var paramDict: [String: String] = ["code": code, "client_id": config.clientId, "redirect_uri": config.redirectURL, "grant_type": "authorization_code"]
 
         if let unwrapped = config.clientSecret {
             paramDict["client_secret"] = unwrapped
         }
 
-        self.tsRedirectUrlInvoked = Int64(NSDate().timeIntervalSince1970 * 1000);
+        self.tsRedirectUrlInvoked = Int64(NSDate().timeIntervalSince1970 * 1000)
 
         http.request(method: .post, path: config.accessTokenEndpoint, parameters: paramDict as [String : AnyObject]?, completionHandler: {(responseObject, error) in
-            self.tsTokenResponseReceived = Int64(NSDate().timeIntervalSince1970 * 1000);
+            self.tsTokenResponseReceived = Int64(NSDate().timeIntervalSince1970 * 1000)
 
             if (error != nil) {
                 self.sendAnalyticsData(accessToken: nil, subjectId: nil)
@@ -496,10 +495,10 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
 
             guard let unwrappedResponse = responseObject as? [String: AnyObject] else {
                 self.sendAnalyticsData(accessToken: nil, subjectId: nil)
-                completionHandler(nil, OAuth2Error.UnexpectedResponse(responseObject as! String) as NSError)
+                completionHandler(nil, OAuth2Error.unexpectedResponse(responseObject as! String) as NSError)
                 return
             }
-            
+
             let accessToken: String = unwrappedResponse["access_token"] as! String
             let refreshToken: String? = unwrappedResponse["refresh_token"] as? String
             let idToken: String? = unwrappedResponse["id_token"] as? String
@@ -508,7 +507,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             // expiration for refresh token is used in Keycloak
             let expirationRefresh = unwrappedResponse["refresh_expires_in"] as? NSNumber
             let expRefresh = expirationRefresh?.stringValue
-            
+
             if idToken != nil {
                 let error = self.validateJwtIdToken(idToken: idToken!)
                 if (error != nil) {
@@ -545,7 +544,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             // need to refresh token
             self.refreshAccessToken(completionHandler: completionHandler)
         } else {
-            self.tsLoginButtonClicked = Int64(NSDate().timeIntervalSince1970 * 1000);
+            self.tsLoginButtonClicked = Int64(NSDate().timeIntervalSince1970 * 1000)
             // ask for authorization code and once obtained exchange code for access token
             self.requestAuthorizationCode(completionHandler: completionHandler)
         }
@@ -564,21 +563,21 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
                 completionHandler(nil, nil, error)
                 return
             }
-            
+
             var paramDict: [String: String] = [:]
             if response != nil {
                 paramDict = ["access_token": response! as! String]
             }
 
             guard let userInfoEndpoint = self.config.userInfoEndpoint else {
-                completionHandler(nil, nil, NSError(domain: "OAuth2Module", code: 0, userInfo: ["OpenID Connect" : "No UserInfo endpoint available in config"]))
+                completionHandler(nil, nil, NSError(domain: "OAuth2Module", code: 0, userInfo: ["OpenID Connect": "No UserInfo endpoint available in config"]))
                 return
             }
 
             let http = Http(baseURL: self.config.baseURL)
             http.authzModule = self
             // http.request(.GET, path:userInfoEndpoint, completionHandler: {(responseObject, error) in
-            self.http.request(method: .get, path:userInfoEndpoint, parameters: paramDict as [String : AnyObject]?, completionHandler: {(responseObject, error) in
+            self.http.request(method: .get, path: userInfoEndpoint, parameters: paramDict as [String : AnyObject]?, completionHandler: {(responseObject, error) in
                 if (error != nil) {
                     completionHandler(nil, nil, error)
                     return
@@ -608,7 +607,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         if (self.oauth2Session.accessToken == nil) {
             return
         }
-        let paramDict: [String:String] = ["token":self.oauth2Session.accessToken!]
+        let paramDict: [String: String] = ["token": self.oauth2Session.accessToken!]
 
         http.request(method: .post, path: config.revokeTokenEndpoint!, parameters: paramDict as [String : AnyObject]?, completionHandler: { (response, error) in
             if (error != nil) {
@@ -630,7 +629,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         if (self.oauth2Session.accessToken == nil) {
             return nil
         } else {
-            return ["Authorization":"Bearer \(self.oauth2Session.accessToken!)"]
+            return ["Authorization": "Bearer \(self.oauth2Session.accessToken!)"]
         }
     }
 
@@ -642,7 +641,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
     open func isAuthorized() -> Bool {
         return self.oauth2Session.accessToken != nil && self.oauth2Session.tokenIsNotExpired()
     }
-    
+
     func extractCode(fromUrl url: URL?, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
         // extract the code from the URL
         let code = self.parametersFrom(queryString: url?.query)["code"]
@@ -655,7 +654,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             completionHandler(code! as AnyObject?, nil)
             state = .authorizationStateApproved
         } else {
-            let error = NSError(domain:AGAuthzErrorDomain, code:0, userInfo:["NSLocalizedDescriptionKey": "User cancelled authorization."])
+            let error = NSError(domain: AGAuthzErrorDomain, code: 0, userInfo: ["NSLocalizedDescriptionKey": "User cancelled authorization."])
             completionHandler(nil, error)
         }
         // finally, unregister
@@ -669,17 +668,17 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         }
 
         let parameterScanner: Scanner = Scanner(string: queryString)
-        var name: NSString? = nil
-        var value: NSString? = nil
+        var name: NSString?
+        var value: NSString?
 
         while (parameterScanner.isAtEnd != true) {
             name = nil
             parameterScanner.scanUpTo("=", into: &name)
-            parameterScanner.scanString("=", into:nil)
+            parameterScanner.scanString("=", into: nil)
 
             value = nil
-            parameterScanner.scanUpTo("&", into:&value)
-            parameterScanner.scanString("&", into:nil)
+            parameterScanner.scanUpTo("&", into: &value)
+            parameterScanner.scanString("&", into: nil)
 
             if (name != nil && value != nil) {
                 parameters[name!.removingPercentEncoding!] = value!.removingPercentEncoding
@@ -688,7 +687,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
 
         return parameters
     }
-    
+
     public func getIdTokenPayload() -> Payload? {
         guard let signedJwt = oauth2Session.idToken else {
             return nil
@@ -696,7 +695,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
 
         return try? JWT.decode(signedJwt, algorithm: .none, verify: false, audience: config.clientId, issuer: config.baseURL)
     }
-    
+
     public func validateJwtIdToken(idToken: String) -> Error? {
         var token: Payload
         do {
@@ -704,11 +703,11 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         } catch {
             return error
         }
-        
+
         let serverTime = self.jsonResponseSerializerWithDate?.lastServerTime
         return validateIdToken(token: token as [String : AnyObject], expectedIssuer: self.config.baseURL, expectedAudience: self.config.clientId, serverTime: serverTime)
     }
-    
+
     public func getIdTokenEncoded() -> String? {
         return oauth2Session.idToken
     }
@@ -729,7 +728,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             applicationDidBecomeActiveNotificationObserver = nil
         }
     }
-    
+
     @available(iOS 9.0, *)
     public func safariViewControllerDidFinish(controller: SFSafariViewController) {
         stopObserving()

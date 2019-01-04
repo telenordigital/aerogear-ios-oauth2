@@ -127,9 +127,9 @@ open class TelenorConnectConfig: Config {
     :param: scopes values for authorization
     :param: accountId this unique id is used by AccountManager to identify the OAuth2 client.
     */
-    public init (clientId: String, redirectUrl: String, useStaging: Bool, scopes: [String], accountId: String, webView: Bool, claims: Set<String>? = nil, optionalParams: [String:String]? = nil, isPublicClient: Bool = true) {
+    public init (clientId: String, redirectUrl: String, useStaging: Bool, scopes: [String], accountId: String, webView: Bool, claims: Set<String>? = nil, optionalParams: [String: String]? = nil, isPublicClient: Bool = true) {
         let baseUrl = useStaging ? "https://connect.staging.telenordigital.com/oauth" : "https://connect.telenordigital.com/oauth"
-        
+
         super.init(base: baseUrl,
             authzEndpoint: "\(baseUrl)/authorize",
             redirectURL: redirectUrl,
@@ -226,7 +226,6 @@ open class AccountManager {
         let modules: [OAuth2Module] = [OAuth2Module](sharedInstance.modules.values)
         return modules.filter {$0.config.clientId == clientId }
     }
-
 
     /**
     Retrieves an OAuth2 module by using a configuration object.

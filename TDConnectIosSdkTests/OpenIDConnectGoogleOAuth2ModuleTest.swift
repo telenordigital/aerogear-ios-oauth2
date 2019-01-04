@@ -35,7 +35,7 @@ class OpenIDConnectGoogleOAuth2ModuleTests: XCTestCase {
     class MyMockOAuth2ModuleSuccess: OAuth2Module {
 
         override func requestAccess(completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
-            let accessToken: AnyObject? = NSString(string:"TOKEN")
+            let accessToken: AnyObject? = NSString(string: "TOKEN")
             completionHandler(accessToken, nil)
         }
     }
@@ -52,14 +52,14 @@ class OpenIDConnectGoogleOAuth2ModuleTests: XCTestCase {
 
         let googleConfig = GoogleConfig(
             clientId: "xxxx.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"],
+            scopes: ["https://www.googleapis.com/auth/drive"],
             isOpenIDConnect: true)
 
         // set up http stub
         setupStubWithNSURLSessionDefaultConfiguration()
         let oauth2Module = AccountManager.addAccountWith(config: googleConfig, moduleClass: MyMockOAuth2ModuleSuccess.self)
 
-        oauth2Module.login {(accessToken: AnyObject?, claims: OpenIdClaim?, error: NSError?) in
+        oauth2Module.login {(_: AnyObject?, claims: OpenIdClaim?, _: NSError?) in
 
             XCTAssertTrue("John" == claims?.name, "claim should be as mocked")
             loginExpectation.fulfill()
@@ -86,7 +86,7 @@ class OpenIDConnectGoogleOAuth2ModuleTests: XCTestCase {
         setupStubWithNSURLSessionDefaultConfiguration()
         let oauth2Module = AccountManager.addAccountWith(config: googleConfig, moduleClass: MyMockOAuth2ModuleSuccess.self)
 
-        oauth2Module.login {(accessToken: AnyObject?, claims: OpenIdClaim?, error: NSError?) in
+        oauth2Module.login {(_: AnyObject?, _: OpenIdClaim?, error: NSError?) in
             var erroDict = (error?.userInfo)!
             let value = erroDict["OpenID Connect"] as! String
             XCTAssertTrue( value == "No UserInfo endpoint available in config", "claim should be as mocked")
@@ -101,13 +101,12 @@ class OpenIDConnectGoogleOAuth2ModuleTests: XCTestCase {
 
         let googleConfig = GoogleConfig(
             clientId: "xxx.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"],
+            scopes: ["https://www.googleapis.com/auth/drive"],
             isOpenIDConnect: true)
-
 
         let oauth2Module = AccountManager.addAccountWith(config: googleConfig, moduleClass: MyMockOAuth2ModuleFailure.self)
 
-        oauth2Module.login {(accessToken: AnyObject?, claims: OpenIdClaim?, error: NSError?) in
+        oauth2Module.login {(_: AnyObject?, _: OpenIdClaim?, error: NSError?) in
 
             XCTAssertTrue(error != nil, "Error")
             loginExpectation.fulfill()

@@ -12,7 +12,7 @@ import XCTest
 import TDConnectIosSdk
 
 class IdTokenValidatorTest: XCTestCase {
-    
+
     func testMissingIssuerReturnsError() {
         let experationTime: String = String(Date().timeIntervalSince1970 + 100)
         let issueTime: String = String(Date().timeIntervalSince1970)
@@ -20,7 +20,7 @@ class IdTokenValidatorTest: XCTestCase {
         let error: IdTokenValidationError? = validateIdToken(token: token as [String : AnyObject], expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: nil)
         XCTAssertNotNil(error)
     }
-    
+
     func testUnmatchingIssuerReturnsError() {
         let experationTime: String = String(Date().timeIntervalSince1970 + 100)
         let issueTime: String = String(Date().timeIntervalSince1970)
@@ -28,7 +28,7 @@ class IdTokenValidatorTest: XCTestCase {
         let error: IdTokenValidationError? = validateIdToken(token: token as [String : AnyObject], expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: nil)
         XCTAssertNotNil(error)
     }
-    
+
     func testMissingAudienceReturnsError() {
         let experationTime: String = String(Date().timeIntervalSince1970 + 100)
         let issueTime: String = String(Date().timeIntervalSince1970)
@@ -36,7 +36,7 @@ class IdTokenValidatorTest: XCTestCase {
         let error: IdTokenValidationError? = validateIdToken(token: token, expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: nil)
         XCTAssertNotNil(error)
     }
-    
+
     func testNotContainingAudienceReturnsError() {
         let experationTime: String = String(Date().timeIntervalSince1970 + 100)
         let issueTime: String = String(Date().timeIntervalSince1970)
@@ -44,7 +44,7 @@ class IdTokenValidatorTest: XCTestCase {
         let error: IdTokenValidationError? = validateIdToken(token: token as [String : AnyObject], expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: nil)
         XCTAssertNotNil(error)
     }
-    
+
     func testUntrustedAudiencePresentReturnsError() {
         let experationTime: String = String(Date().timeIntervalSince1970 + 100)
         let issueTime: String = String(Date().timeIntervalSince1970)
@@ -52,7 +52,7 @@ class IdTokenValidatorTest: XCTestCase {
         let error: IdTokenValidationError? = validateIdToken(token: token as [String : AnyObject], expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: nil)
         XCTAssertNotNil(error)
     }
-    
+
     func testMoreThanOneAudienceButNoAuthorizedPartyReturnsError() {
         let experationTime: String = String(Date().timeIntervalSince1970 + 100)
         let issueTime: String = String(Date().timeIntervalSince1970)
@@ -60,7 +60,7 @@ class IdTokenValidatorTest: XCTestCase {
         let error: IdTokenValidationError? = validateIdToken(token: token as [String : AnyObject], expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: nil)
         XCTAssertNotNil(error)
     }
-    
+
     func testMoreThanOneAudienceAndUnmatchingAuthorizedPartyReturnsError() {
         let experationTime: String = String(Date().timeIntervalSince1970 + 100)
         let issueTime: String = String(Date().timeIntervalSince1970)
@@ -68,14 +68,14 @@ class IdTokenValidatorTest: XCTestCase {
         let error: IdTokenValidationError? = validateIdToken(token: token as [String : AnyObject], expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: nil)
         XCTAssertNotNil(error)
     }
-    
+
     func testMissingExperationTimeReturnsError() {
         let issueTime: String = String(Date().timeIntervalSince1970)
         let token: [String: Any] = ["iss": "expectedIssuer" as AnyObject, "aud": ["expectedAudience"], "iat": issueTime]
         let error: IdTokenValidationError? = validateIdToken(token: token as [String : AnyObject], expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: nil)
         XCTAssertNotNil(error)
     }
-    
+
     func testExpiredExperationTimeReturnsError() {
         let experationTime: String = String(Date().timeIntervalSince1970 - 100)
         let issueTime: String = String(Date().timeIntervalSince1970)
@@ -83,7 +83,7 @@ class IdTokenValidatorTest: XCTestCase {
         let error: IdTokenValidationError? = validateIdToken(token: token as [String : AnyObject], expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: nil)
         XCTAssertNotNil(error)
     }
-    
+
     func testExpiredExperationTimeReturnsNilWhenUnExpiredServerTimeIsPresent() {
         let experationTime: String = String(Date().timeIntervalSince1970 - 100)
         let issueTime: String = String(Date().timeIntervalSince1970)
@@ -92,7 +92,7 @@ class IdTokenValidatorTest: XCTestCase {
         let error: IdTokenValidationError? = validateIdToken(token: token as [String : AnyObject], expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: serverTime)
         XCTAssertNil(error)
     }
-    
+
     func testExpiredExperationTimeReturnsErrorWhenServerTimeIsAlsoExpiredPresent() {
         let experationTime: String = String(Date().timeIntervalSince1970 - 100)
         let issueTime: String = String(Date().timeIntervalSince1970)
@@ -101,14 +101,14 @@ class IdTokenValidatorTest: XCTestCase {
         let error: IdTokenValidationError? = validateIdToken(token: token as [String : AnyObject], expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: serverTime)
         XCTAssertNotNil(error)
     }
-    
+
     func testMissingIssueTimeReturnsError() {
         let experationTime: String = String(Date().timeIntervalSince1970 + 100)
         let token: [String: Any] = ["iss": "expectedIssuer" as AnyObject, "aud": ["expectedAudience"], "exp": experationTime]
         let error: IdTokenValidationError? = validateIdToken(token: token as [String : AnyObject], expectedIssuer: "expectedIssuer", expectedAudience: "expectedAudience", serverTime: nil)
         XCTAssertNotNil(error)
     }
-    
+
     func testEverythingValidReturnsNils() {
         let experationTime: String = String(Date().timeIntervalSince1970 + 100)
         let issueTime: String = String(Date().timeIntervalSince1970)

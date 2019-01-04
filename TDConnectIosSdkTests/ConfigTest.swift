@@ -33,7 +33,7 @@ class ConfigTests: XCTestCase {
     func testGoogleConfigWithoutOpenID() {
         let googleConfig = GoogleConfig(
             clientId: "873670803862-g6pjsgt64gvp7r25edgf4154e8sld5nq.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"])
+            scopes: ["https://www.googleapis.com/auth/drive"])
 
         XCTAssert(googleConfig.scopes.filter({$0 == "openid"}) == [], "no openid defined per default")
         XCTAssert(googleConfig.scopes == ["https://www.googleapis.com/auth/drive"], "no openid defined per default")
@@ -42,7 +42,7 @@ class ConfigTests: XCTestCase {
     func testGoogleConfigWithOpenID() {
         let googleConfig = GoogleConfig(
             clientId: "873670803862-g6pjsgt64gvp7r25edgf4154e8sld5nq.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"],
+            scopes: ["https://www.googleapis.com/auth/drive"],
             isOpenIDConnect: true)
 
         XCTAssert(googleConfig.scopes.filter({$0 == "openid"}) == ["openid"], "openid defined for Open ID Connect config")
@@ -54,7 +54,7 @@ class ConfigTests: XCTestCase {
         let facebookConfig = FacebookConfig(
             clientId: "clientid",
             clientSecret: "secret",
-            scopes:["photo_upload, publish_actions"])
+            scopes: ["photo_upload, publish_actions"])
         print(facebookConfig.scopes)
         XCTAssert(facebookConfig.scopes[0].range(of: "public_profile") == nil, "no public_profile defined per default")
     }
@@ -63,7 +63,7 @@ class ConfigTests: XCTestCase {
         let facebookConfig = FacebookConfig(
             clientId: "clientid",
             clientSecret: "secret",
-            scopes:["photo_upload, publish_actions"],
+            scopes: ["photo_upload, publish_actions"],
             isOpenIDConnect: true)
         print(facebookConfig.scopes)
         XCTAssert(facebookConfig.scopes[0] == "photo_upload, publish_actions, public_profile", "public_profile defined for Open ID Connect config, Facebook does not use openid")
@@ -90,10 +90,10 @@ class ConfigTests: XCTestCase {
         XCTAssert(keycloakConfig.scopes.filter({$0 == "profile"}) == ["profile"], "profile defined for Open ID Connect config")
         XCTAssert(keycloakConfig.scopes.filter({$0 == "email"}) == ["email"], "email defined for Open ID Connect config")
     }
-    
+
     func testScopesEncodedReturnsSpaceSeparatedEncodedScopes() {
         let config = Config(base: "base", authzEndpoint: "authzEndpoint", redirectURL: "redirectURL", accessTokenEndpoint: "accessTokenEndpoint", clientId: "clientId", refreshTokenEndpoint: "refreshTokenEndpoint", revokeTokenEndpoint: "revokeTokenEndpoint", isOpenIDConnect: true, userInfoEndpoint: "userInfoEndpoint", scopes: ["scope1", "scope2"], clientSecret: "clientSecret", accountId: "accountId", claims: nil, optionalParams: nil, isWebView: true)
-        
+
         XCTAssertNotNil(config.scopesEncoded.range(of: "scope1%20scope2"), "scopesEncoded was as expected scope1%20scope2, instead: \(config.scopesEncoded)")
     }
 

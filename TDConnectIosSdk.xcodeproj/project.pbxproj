@@ -114,6 +114,7 @@
 		BE960CF64C41D83A722A3E4A /* Pods_TDConnectIosSdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TDConnectIosSdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5CBDFC0086B2EEE36A81AFD /* Pods-TDConnectIosSdk.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TDConnectIosSdk.release.xcconfig"; path = "Pods/Target Support Files/Pods-TDConnectIosSdk/Pods-TDConnectIosSdk.release.xcconfig"; sourceTree = "<group>"; };
 		CAF4DA6D67969EE7E6DB6C71 /* Pods-TDConnectIosSdkTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TDConnectIosSdkTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-TDConnectIosSdkTests/Pods-TDConnectIosSdkTests.release.xcconfig"; sourceTree = "<group>"; };
+		D0F0E52021DE0C4E00D529DD /* AeroGearHttp */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AeroGearHttp; path = Pods/AeroGearHttp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -232,6 +233,7 @@
 		6DA531836D4D42D3E1904E78 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D0F0E52021DE0C4E00D529DD /* AeroGearHttp */,
 				01B3956E1F28B9C900AF514E /* libz.tbd */,
 				01B3956C1F28B98400AF514E /* libcurl.a */,
 				9ADB5FF0CB048392A40B2D60 /* Pods.framework */,
@@ -276,6 +278,7 @@
 				4833045E19AF1635002F8DA9 /* Frameworks */,
 				4833045F19AF1635002F8DA9 /* Headers */,
 				4833046019AF1635002F8DA9 /* Resources */,
+				D07600F221DE03F1006EBA09 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -399,6 +402,23 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		D07600F221DE03F1006EBA09 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which swiftlint >/dev/null; then\nswiftlint\nelse\necho \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
 		};
 		EC59B054FB4610D6F88D66D5 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;

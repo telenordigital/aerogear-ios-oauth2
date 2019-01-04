@@ -26,18 +26,18 @@ func setupStubFacebookWithNSURLSessionDefaultConfiguration() {
     _ = stub({_ in return true}, response: { (request: URLRequest!) -> OHHTTPStubsResponse in
             _ = ["name": "John", "family_name": "Smith"]
             guard let url = request.url else {
-                return OHHTTPStubsResponse(data:Data(), statusCode: 404, headers: ["Content-Type" : "text/json"])
+                return OHHTTPStubsResponse(data: Data(), statusCode: 404, headers: ["Content-Type": "text/json"])
             }
             switch url.path {
             case "/me/permissions":
                 let string = "{\"access_token\":\"NEWLY_REFRESHED_ACCESS_TOKEN\", \"refresh_token\":\"nnn\",\"expires_in\":23}"
                 let data = string.data(using: String.Encoding.utf8)
-                return OHHTTPStubsResponse(data:data!, statusCode: 200, headers: ["Content-Type" : "text/json"])
+                return OHHTTPStubsResponse(data: data!, statusCode: 200, headers: ["Content-Type": "text/json"])
             case "/oauth/access_token":
                 let string = "access_token=CAAK4k&expires=5183999"
                 let data = string.data(using: String.Encoding.utf8)
-                return OHHTTPStubsResponse(data:data!, statusCode: 200, headers: ["Content-Type" : "text/plain"])
-            default: return OHHTTPStubsResponse(data:Data(), statusCode: 404, headers: ["Content-Type" : "text/json"])
+                return OHHTTPStubsResponse(data: data!, statusCode: 200, headers: ["Content-Type": "text/plain"])
+            default: return OHHTTPStubsResponse(data: Data(), statusCode: 404, headers: ["Content-Type": "text/json"])
             }
         })
 }
@@ -59,11 +59,11 @@ class FacebookOAuth2ModuleTests: XCTestCase {
         let facebookConfig = FacebookConfig(
             clientId: "xxx",
             clientSecret: "yyy",
-            scopes:["photo_upload, publish_actions"])
+            scopes: ["photo_upload, publish_actions"])
 
         let mockedSession = MockOAuth2SessionWithRefreshToken()
         let oauth2Module = FacebookOAuth2Module(config: facebookConfig, session: mockedSession, requestSerializer: JsonRequestSerializer(), responseSerializer: StringResponseSerializer())
-        oauth2Module.exchangeAuthorizationCodeForAccessToken(code: "CODE", completionHandler: {(response: AnyObject?, error: NSError?) -> Void in
+        oauth2Module.exchangeAuthorizationCodeForAccessToken(code: "CODE", completionHandler: {(response: AnyObject?, _: NSError?) -> Void in
             XCTAssertTrue(response as! String == "CAAK4k", "Check access token is return to callback")
             expectation.fulfill()
         })
@@ -75,11 +75,11 @@ class FacebookOAuth2ModuleTests: XCTestCase {
         let facebookConfig = FacebookConfig(
             clientId: "xxx",
             clientSecret: "yyy",
-            scopes:["photo_upload, publish_actions"])
+            scopes: ["photo_upload, publish_actions"])
 
         let mockedSession = MockOAuth2SessionWithRefreshToken()
         let oauth2Module = FacebookOAuth2Module(config: facebookConfig, session: mockedSession, requestSerializer: JsonRequestSerializer(), responseSerializer: StringResponseSerializer())
-        oauth2Module.revokeAccess(completionHandler: {(response: AnyObject?, error: NSError?) -> Void in
+        oauth2Module.revokeAccess(completionHandler: {(_: AnyObject?, _: NSError?) -> Void in
             XCTAssertTrue(mockedSession.clearTokensCalled, "revoke token reset session")
             expectation.fulfill()
         })

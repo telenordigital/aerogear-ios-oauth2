@@ -39,28 +39,28 @@ func setupStubWithNSURLSessionDefaultConfiguration() {
     _ = stub({_ in return true}, response: { (request: URLRequest!) -> OHHTTPStubsResponse in
             let stubJsonResponse = ["name": "John", "family_name": "Smith"]
             guard let url = request.url else {
-                return OHHTTPStubsResponse(data:Data(), statusCode: 404, headers: ["Content-Type" : "text/json"])
+                return OHHTTPStubsResponse(data: Data(), statusCode: 404, headers: ["Content-Type": "text/json"])
             }
             switch url.path {
             case "/plus/v1/people/me/openIdConnect":
                 let data = try! JSONSerialization.data(withJSONObject: stubJsonResponse, options: JSONSerialization.WritingOptions())
-                return OHHTTPStubsResponse(data:data, statusCode: 200, headers: ["Content-Type" : "text/json"])
+                return OHHTTPStubsResponse(data: data, statusCode: 200, headers: ["Content-Type": "text/json"])
             case "/v2.2/me":
                 let string = "{\"id\":\"10204448880356292\",\"first_name\":\"Corinne\",\"gender\":\"female\",\"last_name\":\"Krych\",\"link\":\"https:\\/\\/www.facebook.com\\/app_scoped_user_id\\/10204448880356292\\/\",\"locale\":\"en_GB\",\"name\":\"Corinne Krych\",\"timezone\":1,\"updated_time\":\"2014-09-24T10:51:12+0000\",\"verified\":true}"
                 let data = string.data(using: String.Encoding.utf8)
-                return OHHTTPStubsResponse(data:data!, statusCode: 200, headers: ["Content-Type" : "text/json"])
+                return OHHTTPStubsResponse(data: data!, statusCode: 200, headers: ["Content-Type": "text/json"])
             case "/o/oauth2/token",
                  "/oauth/token":
                 let string = "{\"access_token\":\"NEWLY_REFRESHED_ACCESS_TOKEN\", \"refresh_token\":\"REFRESH_TOKEN\",\"expires_in\":23}"
                 let data = string.data(using: String.Encoding.utf8)
-                return OHHTTPStubsResponse(data:data!, statusCode: 200, headers: ["Content-Type" : "text/json"])
+                return OHHTTPStubsResponse(data: data!, statusCode: 200, headers: ["Content-Type": "text/json"])
             case "/o/oauth2/revoke",
                  "/oauth/revoke",
                  "/oauth/logout":
                 let string = "{}"
                 let data = string.data(using: String.Encoding.utf8)
-                return OHHTTPStubsResponse(data:data!, statusCode: 200, headers: ["Content-Type" : "text/json"])
-            default: return OHHTTPStubsResponse(data:Data(), statusCode: 200, headers: ["Content-Type" : "text/json"])
+                return OHHTTPStubsResponse(data: data!, statusCode: 200, headers: ["Content-Type": "text/json"])
+            default: return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: ["Content-Type": "text/json"])
             }
         })
 }
@@ -69,19 +69,18 @@ func setupStubWithNSURLSessionDefaultConfigurationWithoutRefreshTokenIssued() {
     // set up http stub
     _ = stub({_ in return true}, response: { (request: URLRequest!) -> OHHTTPStubsResponse in
             guard let url = request.url else {
-                return OHHTTPStubsResponse(data:Data(), statusCode: 404, headers: ["Content-Type" : "text/json"])
+                return OHHTTPStubsResponse(data: Data(), statusCode: 404, headers: ["Content-Type": "text/json"])
             }
             switch url.path {
             case "/o/oauth2/token":
                 let string = "{\"access_token\":\"ACCESS_TOKEN\"}"
                 let data = string.data(using: String.Encoding.utf8)
-                return OHHTTPStubsResponse(data:data!, statusCode: 200, headers: ["Content-Type" : "text/json"])
+                return OHHTTPStubsResponse(data: data!, statusCode: 200, headers: ["Content-Type": "text/json"])
 
-            default: return OHHTTPStubsResponse(data:Data(), statusCode: 200, headers: ["Content-Type" : "text/json"])
+            default: return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: ["Content-Type": "text/json"])
             }
         })
 }
-
 
 class OAuth2ModuleTests: XCTestCase {
 
@@ -98,10 +97,10 @@ class OAuth2ModuleTests: XCTestCase {
         let expectation = self.expectation(description: "AccessRequestAlreadyAccessTokenPresent")
         let googleConfig = GoogleConfig(
             clientId: "xxx.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"])
+            scopes: ["https://www.googleapis.com/auth/drive"])
 
         let partialMock = OAuth2Module(config: googleConfig, session: MockOAuth2SessionWithValidAccessTokenStored())
-        partialMock.requestAccess { (response: AnyObject?, error: NSError?) -> Void in
+        partialMock.requestAccess { (response: AnyObject?, _: NSError?) -> Void in
             XCTAssertTrue("TOKEN" == response as! String, "If access token present and still valid")
             expectation.fulfill()
         }
@@ -112,10 +111,10 @@ class OAuth2ModuleTests: XCTestCase {
         let expectation = self.expectation(description: "AccessRequestwithRefreshFlow")
         let googleConfig = GoogleConfig(
             clientId: "873670803862-g6pjsgt64gvp7r25edgf4154e8sld5nq.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"])
+            scopes: ["https://www.googleapis.com/auth/drive"])
 
         let partialMock = OAuth2ModulePartialMock(config: googleConfig, session: MockOAuth2SessionWithRefreshToken())
-        partialMock.requestAccess { (response: AnyObject?, error: NSError?) -> Void in
+        partialMock.requestAccess { (response: AnyObject?, _: NSError?) -> Void in
             XCTAssertTrue("NEW_ACCESS_TOKEN" == response as! String, "If access token not valid but refresh token present and still valid")
             expectation.fulfill()
         }
@@ -126,10 +125,10 @@ class OAuth2ModuleTests: XCTestCase {
         let expectation = self.expectation(description: "AccessRequestWithAuthzFlow")
         let googleConfig = GoogleConfig(
             clientId: "xxx.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"])
+            scopes: ["https://www.googleapis.com/auth/drive"])
 
         let partialMock = OAuth2ModulePartialMock(config: googleConfig, session: MockOAuth2SessionWithAuthzCode())
-        partialMock.requestAccess { (response: AnyObject?, error: NSError?) -> Void in
+        partialMock.requestAccess { (response: AnyObject?, _: NSError?) -> Void in
             XCTAssertTrue("ACCESS_TOKEN" == response as! String, "If access token not valid and no refresh token present")
             expectation.fulfill()
         }
@@ -141,11 +140,11 @@ class OAuth2ModuleTests: XCTestCase {
         let expectation = self.expectation(description: "Refresh")
         let googleConfig = GoogleConfig(
             clientId: "xxx.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"])
+            scopes: ["https://www.googleapis.com/auth/drive"])
 
         let mockedSession = MockOAuth2SessionWithRefreshToken()
         let oauth2Module = OAuth2Module(config: googleConfig, session: mockedSession)
-        oauth2Module.refreshAccessToken { (response: AnyObject?, error: NSError?) -> Void in
+        oauth2Module.refreshAccessToken { (response: AnyObject?, _: NSError?) -> Void in
             XCTAssertTrue("NEWLY_REFRESHED_ACCESS_TOKEN" == response as! String, "If access token not valid but refresh token present and still valid")
             XCTAssertTrue("REFRESH_TOKEN" == mockedSession.savedRefreshedToken, "Saved newly issued refresh token")
             expectation.fulfill()
@@ -158,10 +157,10 @@ class OAuth2ModuleTests: XCTestCase {
         let expectation = self.expectation(description: "AccessRequest")
         let googleConfig = GoogleConfig(
             clientId: "xxx.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"])
+            scopes: ["https://www.googleapis.com/auth/drive"])
 
         let oauth2Module = OAuth2Module(config: googleConfig, session: MockOAuth2SessionWithRefreshToken())
-        oauth2Module.exchangeAuthorizationCodeForAccessToken (code: "CODE", completionHandler: {(response: AnyObject?, error: NSError?) -> Void in
+        oauth2Module.exchangeAuthorizationCodeForAccessToken (code: "CODE", completionHandler: {(response: AnyObject?, _: NSError?) -> Void in
             XCTAssertTrue("NEWLY_REFRESHED_ACCESS_TOKEN" == response as! String, "If access token not valid but refresh token present and still valid")
             expectation.fulfill()
         })
@@ -173,10 +172,10 @@ class OAuth2ModuleTests: XCTestCase {
         let expectation = self.expectation(description: "AccessRequest")
         let googleConfig = GoogleConfig(
             clientId: "xxx.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"])
+            scopes: ["https://www.googleapis.com/auth/drive"])
 
         let oauth2Module = OAuth2Module(config: googleConfig, session: MockOAuth2SessionWithRefreshToken())
-        oauth2Module.exchangeAuthorizationCodeForAccessToken (code: "CODE", completionHandler: {(response: AnyObject?, error: NSError?) -> Void in
+        oauth2Module.exchangeAuthorizationCodeForAccessToken (code: "CODE", completionHandler: {(response: AnyObject?, _: NSError?) -> Void in
             XCTAssertTrue("ACCESS_TOKEN" == response as! String, "If access token not valid but refresh token present and still valid")
             expectation.fulfill()
         })
@@ -188,17 +187,17 @@ class OAuth2ModuleTests: XCTestCase {
         let expectation = self.expectation(description: "Revoke")
         let googleConfig = GoogleConfig(
             clientId: "xxx.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"])
+            scopes: ["https://www.googleapis.com/auth/drive"])
 
         let mockedSession = MockOAuth2SessionWithRefreshToken()
         let oauth2Module = OAuth2Module(config: googleConfig, session: mockedSession)
-        oauth2Module.revokeAccess(completionHandler: {(response: AnyObject?, error: NSError?) -> Void in
+        oauth2Module.revokeAccess(completionHandler: {(_: AnyObject?, _: NSError?) -> Void in
             XCTAssertTrue(mockedSession.clearTokensCalled, "revoke token reset session")
             expectation.fulfill()
         })
         waitForExpectations(timeout: 10, handler: nil)
     }
-    
+
     func testTelenorConnectOAuth2ModuleLogOutClearsTokens() {
         setupStubWithNSURLSessionDefaultConfiguration()
         let expectation = self.expectation(description: "logOut clears session tokens")
@@ -220,14 +219,14 @@ class OAuth2ModuleTests: XCTestCase {
         }
         waitForExpectations(timeout: 10, handler: nil)
     }
-    
+
     func testGetClaimsParamFormatsCorrectly() {
         let claims: Set<String> = ["email", "phone"]
-        
+
         do {
             let claimParams = try OAuth2Module.getParam(claims: claims)
             let url = "http://example.com?foo=baz" + claimParams
-            let claims : String = getQueryStringParameter(url: url, param: "claims")!
+            let claims: String = getQueryStringParameter(url: url, param: "claims")!
             let decodedClaims = claims.decodeUrl()!
             let data = decodedClaims.data(using: .utf8)!
             let claimsMap = try! JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
@@ -240,7 +239,7 @@ class OAuth2ModuleTests: XCTestCase {
             XCTFail(String(describing: error))
         }
     }
-    
+
     func testClaimsAreFormattedToQueryParam() {
         let config = TelenorConnectConfig(
             clientId: "clientId",
@@ -254,7 +253,7 @@ class OAuth2ModuleTests: XCTestCase {
         let http = Http(baseURL: "https://connect.staging.telenordigital.com/oauth")
         do {
             let url = try OAuth2Module.getAuthUrl(config: config, http: http, browserType: BrowserType.unknown)
-            let claims : String = getQueryStringParameter(url: url.absoluteString, param: "claims")!
+            let claims: String = getQueryStringParameter(url: url.absoluteString, param: "claims")!
             let decodedClaims = claims.decodeUrl()!
             let data = decodedClaims.data(using: .utf8)!
             let claimsMap = try! JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
@@ -267,12 +266,12 @@ class OAuth2ModuleTests: XCTestCase {
             XCTFail("Failed to getAuthUrl with config=\(config) and http=\(http)")
         }
     }
-    
+
     func getQueryStringParameter(url: String, param: String) -> String? {
         guard let url = URLComponents(string: url) else { return nil }
         return url.queryItems?.first(where: { $0.name == param })?.value
     }
-    
+
     func testMissingClaimsIsAllowed() {
         let config = TelenorConnectConfig(
             clientId: "clientId",
@@ -291,7 +290,7 @@ class OAuth2ModuleTests: XCTestCase {
             XCTFail("Failed to getAuthUrl with config=\(config) and http=\(http)")
         }
     }
-    
+
     func testGetAuthUrlWithScopesReturnsParamWithEncodedSpaceSeparatedScopes() {
         let config = TelenorConnectConfig(
             clientId: "clientId",
@@ -310,17 +309,17 @@ class OAuth2ModuleTests: XCTestCase {
             XCTFail("Failed to getAuthUrl with config=\(config) and http=\(http)")
         }
     }
-    
+
     func testRefreshAccessTokenCallsSaveAccessTokenWithNilIdToken() {
         setupStubWithNSURLSessionDefaultConfiguration()
-        let expectation = self.expectation(description: "Unchanged ID token");
+        let expectation = self.expectation(description: "Unchanged ID token")
         let googleConfig = GoogleConfig(
             clientId: "xxx.apps.googleusercontent.com",
-            scopes:["https://www.googleapis.com/auth/drive"])
-        
+            scopes: ["https://www.googleapis.com/auth/drive"])
+
         let mockedSession = MockOAuth2SessionWithRefreshToken()
         let oauth2Module = OAuth2Module(config: googleConfig, session: mockedSession)
-        oauth2Module.refreshAccessToken { (response: AnyObject?, error:NSError?) -> Void in
+        oauth2Module.refreshAccessToken { (_: AnyObject?, error: NSError?) -> Void in
             if error != nil {
                 XCTFail("Got error")
             }

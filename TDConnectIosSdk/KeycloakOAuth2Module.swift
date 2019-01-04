@@ -31,7 +31,7 @@ open class KeycloakOAuth2Module: OAuth2Module {
             return
         }
 
-        let paramDict: [String:String] = [ "client_id": config.clientId, "refresh_token": self.oauth2Session.refreshToken!]
+        let paramDict: [String: String] = [ "client_id": config.clientId, "refresh_token": self.oauth2Session.refreshToken!]
         http.request(method: .post, path: revokeTokenEndpoint, parameters: paramDict as [String : AnyObject]?, completionHandler: { (response, error) in
             if (error != nil) {
                 completionHandler(nil, error)
@@ -101,11 +101,9 @@ open class KeycloakOAuth2Module: OAuth2Module {
         }
     }
 
-
     func decode(_ token: String) -> [String: AnyObject]? {
         let string = token.components(separatedBy: ".")
         let toDecode = string[1] as String
-
 
         var stringtoDecode: String = toDecode.replacingOccurrences(of: "-", with: "+") // 62nd char of encoding
         stringtoDecode = stringtoDecode.replacingOccurrences(of: "_", with: "/") // 63rd char of encoding
@@ -121,7 +119,7 @@ open class KeycloakOAuth2Module: OAuth2Module {
         var values: [String: AnyObject]?
         if let string = base64DecodedString {
             if let data = string.data(using: String.Encoding.utf8.rawValue, allowLossyConversion: true) {
-                values = try! JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.allowFragments) as? [String : AnyObject]
+                values = try! JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.allowFragments) as? [String: AnyObject]
             }
         }
         return values

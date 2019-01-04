@@ -61,7 +61,7 @@ open class Config {
     Endpoint for OpenID Connect to get user information.
     */
     public let userInfoEndpoint: String?
-    
+
     /**
     Endpoint for performing a token-based logout, which will log the user out of any SSO session.
     */
@@ -126,34 +126,34 @@ open class Config {
     End result will be %7B%22userinfo%22%3A%7B%22openid%22%3A%7B%22essential%22%3Atrue%7D%2C%22profile%22%3A%7B%22essential%22%3Atrue%7D%2C%22email%22%3A%7B%22essential%22%3Atrue%7D%2C%22address%22%3A%7B%22essential%22%3Atrue%7D%2C%22phone%22%3A%7B%22essential%22%3Atrue%7D%7D%7D
     */
     public var claims: Set<String>?
-    
+
     /**
     This dict can be used to set optional query params such as state, prompt, max_age, ui_locales, login_hint and acr_values.
     */
     public var optionalParams: [String: String]?
-    
+
     /**
     Boolean to indicate to either used a webview (if true) or an external browser (by default, false)
     for authorization code grant flow.
     */
     open var isWebView: Bool = false
-    
+
     /**
     Boolean to indicate whether the client is a public client (true) or a confidential client (false).
     A public client will exchange the authorization code for tokens, on successful authentication and authorization.
     A confidential client will not exchange the authorization code but simply return this to the client through the callback, on successful authentication and authorization.
     */
     public let isPublicClient: Bool
-    
+
     /**
     A handler to allow the webview to be pushed onto the navigation controller
     */
-    open var webViewHandler: ((OAuth2WebViewController, _ completionHandler: (AnyObject?, NSError?) -> Void) -> ()) = {
+    open var webViewHandler: ((OAuth2WebViewController, _ completionHandler: (AnyObject?, NSError?) -> Void) -> Void) = {
         (webView, completionHandler) in
         UIApplication.shared.keyWindow?.rootViewController?.present(webView, animated: true, completion: nil)
     }
 
-    public init(base: String, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, wellKnownConfigurationEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, logOutEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, claims: Set<String>? = nil, optionalParams: [String: String]? = nil, isWebView: Bool = false, isPublicClient: Bool = true) {
+    public init(base: String, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, wellKnownConfigurationEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, logOutEndpoint: String? = nil, scopes: [String] = [], clientSecret: String? = nil, accountId: String? = nil, claims: Set<String>? = nil, optionalParams: [String: String]? = nil, isWebView: Bool = false, isPublicClient: Bool = true) {
         self.baseURL = base
         self.authzEndpoint = authzEndpoint
         self.redirectURL = redirectURL

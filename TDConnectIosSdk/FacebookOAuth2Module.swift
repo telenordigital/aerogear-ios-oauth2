@@ -34,7 +34,7 @@ open class FacebookOAuth2Module: OAuth2Module {
     :param: completionHandler A block object to be executed when the request operation finishes.
     */
     override open func exchangeAuthorizationCodeForAccessToken(code: String, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
-        var paramDict: [String: String] = ["code": code, "client_id": config.clientId, "redirect_uri": config.redirectURL, "grant_type":"authorization_code"]
+        var paramDict: [String: String] = ["code": code, "client_id": config.clientId, "redirect_uri": config.redirectURL, "grant_type": "authorization_code"]
 
         if let unwrapped = config.clientSecret {
             paramDict["client_secret"] = unwrapped
@@ -48,8 +48,8 @@ open class FacebookOAuth2Module: OAuth2Module {
             }
 
             if let unwrappedResponse = response as? String {
-                var accessToken: String? = nil
-                var expiredIn: String? = nil
+                var accessToken: String?
+                var expiredIn: String?
 
                 let charSet: NSMutableCharacterSet = NSMutableCharacterSet()
                 charSet.addCharacters(in: "&=")
@@ -84,7 +84,7 @@ open class FacebookOAuth2Module: OAuth2Module {
             return
         }
 
-        let paramDict: [String:String] = ["access_token":self.oauth2Session.accessToken!]
+        let paramDict: [String: String] = ["access_token": self.oauth2Session.accessToken!]
 
         http.request(method: .delete, path: revokeTokenEndpoint, parameters: paramDict as [String : AnyObject]?, completionHandler: { (response, error) in
 
@@ -131,7 +131,7 @@ open class FacebookOAuth2Module: OAuth2Module {
                     }
                 })
             } else {
-                completionHandler(nil, nil, NSError(domain: "OAuth2Module", code: 0, userInfo: ["OpenID Connect" : "No UserInfo endpoint available in config"]))
+                completionHandler(nil, nil, NSError(domain: "OAuth2Module", code: 0, userInfo: ["OpenID Connect": "No UserInfo endpoint available in config"]))
                 return
             }
         }

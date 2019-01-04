@@ -34,12 +34,11 @@ extension Date {
         dateStringFormatter.dateFormat = "yyyy-MM-dd hh:mm:ss a"
         let d = dateStringFormatter.date(from: dateString)
         if let unwrappedDate = d {
-            self.init(timeInterval:0, since:unwrappedDate)
+            self.init(timeInterval: 0, since: unwrappedDate)
         } else {
             self.init()
         }
     }
-
 
     /**
     Returns a string of the date object using the format 'yyyy-MM-dd hh:mm:ss a'.

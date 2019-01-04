@@ -10,11 +10,11 @@ import Foundation
 import AeroGearHttp
 
 open class JsonResponseSerializerWithDate: JsonResponseSerializer {
-    
+
     let dateFormatter = DateFormatter()
-    
+
     open var lastServerTime: Date?
-    
+
     public override init() {
         super.init()
         dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
@@ -28,5 +28,5 @@ open class JsonResponseSerializerWithDate: JsonResponseSerializer {
             self.lastServerTime = self.dateFormatter.date(from: serverDate)
         }
     }
-    
+
 }
