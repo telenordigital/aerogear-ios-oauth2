@@ -359,6 +359,13 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             self.authenticationSession = ASWebAuthenticationSession(url: url, callbackURLScheme: nil, completionHandler: { (successUrl: URL?, error: Error?) in
                 self.handleCallback(successUrl, error: error, state: state, completionHandler: completionHandler)
             })
+            if #available(iOS 13.0, *) {
+                if (config.viewControllerContext is ASWebAuthenticationPresentationContextProviding) {
+                    (self.authenticationSession as! ASWebAuthenticationSession).presentationContextProvider = (config.viewControllerContext as! ASWebAuthenticationPresentationContextProviding)
+                } else {
+                    fatalError("iOS 13 and higher requires to provide view controller, that implements ASWebAuthenticationPresentationContextProviding protocol")
+                }
+            }
             (self.authenticationSession as! ASWebAuthenticationSession).start()
         } else if browserType == .safariAuthenticationSession {
             guard #available(iOS 11.0, *) else {

@@ -17,6 +17,7 @@
 
 import Foundation
 import UIKit
+import AuthenticationServices
 
 /**
 Configuration object to setup an OAuth2 module
@@ -152,8 +153,17 @@ open class Config {
         (webView, completionHandler) in
         UIApplication.shared.keyWindow?.rootViewController?.present(webView, animated: true, completion: nil)
     }
+    
+    /**
+     In iOS 13 we need to help the OS out when it’s making the decision on where and how to display the OAuth Alert and Web login flow.
+     To do that, we have to let the ASWebAuthenticationSession know which window is presenting the OAuth request.
+     This is done by implementing the ASWebAuthenticationPresentationContextProviding interface in your presenting View Controller.
+     
+     This variable will expect to see ASWebAuthenticationPresentationContextProviding, the Any? type is put because of iOS versions compability
+     */
+    open var viewControllerContext: Any?
 
-    public init(base: String, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, wellKnownConfigurationEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, logOutEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, claims: Set<String>? = nil, optionalParams: [String: String]? = nil, isWebView: Bool = false, isPublicClient: Bool = true) {
+    public init(base: String, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, wellKnownConfigurationEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, logOutEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, claims: Set<String>? = nil, optionalParams: [String: String]? = nil, isWebView: Bool = false, isPublicClient: Bool = true, viewControllerContext: Any? = nil) {
         self.baseURL = base
         self.authzEndpoint = authzEndpoint
         self.redirectURL = redirectURL
@@ -173,5 +183,6 @@ open class Config {
         self.optionalParams = optionalParams
         self.isWebView = isWebView
         self.isPublicClient = isPublicClient
+        self.viewControllerContext = viewControllerContext
     }
 }
