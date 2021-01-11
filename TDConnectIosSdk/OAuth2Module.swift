@@ -244,7 +244,7 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             let url: URL? = info[UIApplication.LaunchOptionsKey.url] as? URL
             self.handleCallback(url, error: nil, state: state, completionHandler: completionHandler)
         })
-
+        
         launchBrowser(url, state, completionHandler)
     }
     
@@ -292,7 +292,11 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             }
         }
 
+        let deviceId = UIDevice.current.identifierForVendor?.uuidString
         var params = "?scope=\(config.scopesEncoded)&redirect_uri=\(config.redirectURL.urlEncode())&client_id=\(config.clientId)&response_type=code&telenordigital_sdk_version=ios_\(version)"
+        if (deviceId != nil) {
+            params += "&telenordigital_did=\(deviceId)"
+        }
         if let optionalParamsEncoded = optionalParamsEncoded {
             params += optionalParamsEncoded
         }
