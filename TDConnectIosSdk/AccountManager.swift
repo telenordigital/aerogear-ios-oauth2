@@ -161,7 +161,9 @@ open class TelenorConnectConfig: Config {
             claims: claims,
             optionalParams: optionalParams,
             isPublicClient: isPublicClient,
-            viewControllerContext: viewControllerContext
+            viewControllerContext: viewControllerContext,
+            idProvider: idProvider,
+            useStaging: useStaging
         )
     }
 }

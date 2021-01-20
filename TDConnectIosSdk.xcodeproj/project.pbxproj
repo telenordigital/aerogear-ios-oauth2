@@ -39,6 +39,7 @@
 		49237AEB23560DDE005C8F4E /* AboutModalOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49237AE923560DDE005C8F4E /* AboutModalOverlay.swift */; };
 		49237AF0235875DB005C8F4E /* assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49237AEF235875DB005C8F4E /* assets.xcassets */; };
 		49237B342359F767005C8F4E /* AboutTextLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49237B322359F767005C8F4E /* AboutTextLink.swift */; };
+		4966198C25B6FBEC001973EC /* HeTokenResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4966198B25B6FBEC001973EC /* HeTokenResponse.swift */; };
 		496D092F22770C2A00D752F5 /* IdProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496D092E22770C2A00D752F5 /* IdProvider.swift */; };
 		499D75722361D5AC001ECBE8 /* AboutTextLink.xib in Resources */ = {isa = PBXBuildFile; fileRef = 499D75702361D5AC001ECBE8 /* AboutTextLink.xib */; };
 		499D75732361D5AC001ECBE8 /* AboutModalOverlay.xib in Resources */ = {isa = PBXBuildFile; fileRef = 499D75712361D5AC001ECBE8 /* AboutModalOverlay.xib */; };
@@ -112,6 +113,7 @@
 		49237AE923560DDE005C8F4E /* AboutModalOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutModalOverlay.swift; sourceTree = "<group>"; };
 		49237AEF235875DB005C8F4E /* assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = assets.xcassets; sourceTree = "<group>"; };
 		49237B322359F767005C8F4E /* AboutTextLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutTextLink.swift; sourceTree = "<group>"; };
+		4966198B25B6FBEC001973EC /* HeTokenResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeTokenResponse.swift; sourceTree = "<group>"; };
 		496D092E22770C2A00D752F5 /* IdProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdProvider.swift; sourceTree = "<group>"; };
 		499D75702361D5AC001ECBE8 /* AboutTextLink.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AboutTextLink.xib; sourceTree = "<group>"; };
 		499D75712361D5AC001ECBE8 /* AboutModalOverlay.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AboutModalOverlay.xib; sourceTree = "<group>"; };
@@ -171,6 +173,7 @@
 		4833046419AF1635002F8DA9 /* TDConnectIosSdk */ = {
 			isa = PBXGroup;
 			children = (
+				4966198B25B6FBEC001973EC /* HeTokenResponse.swift */,
 				499D75712361D5AC001ECBE8 /* AboutModalOverlay.xib */,
 				499D75702361D5AC001ECBE8 /* AboutTextLink.xib */,
 				01809E05207B99A20007A4A7 /* UIDeviceExtension.swift */,
@@ -450,6 +453,7 @@
 				485D73811A35BCBC0007D9EC /* OpenIDClaim.swift in Sources */,
 				48DE90A619CDEAEE007F9B21 /* KeycloakOAuth2Module.swift in Sources */,
 				5C8F38A2205A72260008756F /* JsonResponseSerializerWithDate.swift in Sources */,
+				4966198C25B6FBEC001973EC /* HeTokenResponse.swift in Sources */,
 				01BD2C591F28A2370051E77C /* OperatorInfo.swift in Sources */,
 				5CF359B31CAA8C800064C43D /* TelenorConnectOAuth2Module.swift in Sources */,
 				49237AEB23560DDE005C8F4E /* AboutModalOverlay.swift in Sources */,

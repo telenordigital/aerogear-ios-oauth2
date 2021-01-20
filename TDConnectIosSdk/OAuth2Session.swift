@@ -37,6 +37,16 @@ public protocol OAuth2Session {
      var accessTokenExpirationDate: Date? {get set}
 
     /**
+    The he token which expires.
+    */
+    var heToken: String? {get set}
+    
+    /**
+    The he token's expiration date.
+    */
+    var heTokenExpirationDate: Date?  {get set}
+    
+    /**
     The refresh token's expiration date.
     */
     var refreshTokenExpirationDate: Date? {get set}
@@ -56,12 +66,16 @@ public protocol OAuth2Session {
     */
     func tokenIsNotExpired() -> Bool
 
-
     /**
     Check validity of refreshToken. return true if still valid, false when expired.
     */
     func refreshTokenIsNotExpired() -> Bool
 
+    /**
+    Check validity of he  token. return true if still valid, false when expired.
+    */
+    func heTokenIsNotExpired() -> Bool
+    
     /**
     Clears any tokens storage
     */
@@ -77,4 +91,12 @@ public protocol OAuth2Session {
     :param: refreshTokenExpiration the expiration for the refresh token.
     */
     func save(accessToken: String?, refreshToken: String?, accessTokenExpiration: String?, refreshTokenExpiration: String?, idToken: String?)
+    
+    /**
+    Save he token information.
+
+    :param: heToken the he token.
+    :param: heTokenExpiration the expiration for the he token.
+    */
+    func saveHeToken(heToken: String, heTokenExpiration: String)
 }

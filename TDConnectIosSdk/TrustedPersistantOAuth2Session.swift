@@ -30,8 +30,10 @@ The type of token to be saved in KeychainWrap:
 public enum TokenType: String {
     case AccessToken = "AccessToken"
     case RefreshToken = "RefreshToken"
+    case HeToken = "HeToken"
     case ExpirationDate = "ExpirationDate"
     case RefreshExpirationDate = "RefreshExpirationDate"
+    case HeTokenExpirationDate = "HeExpirationDate"
     case IdToken = "IdToken"
 }
 
@@ -298,6 +300,43 @@ public class TrustedPersistentOAuth2Session: OAuth2Session {
             }
         }
     }
+    
+    /**
+    The heToken expiration date.
+     */
+    public var heTokenExpirationDate: Date? {
+        get {
+            let dateAsString = self.keychain.read(userAccount: self.accountId, tokenType: .HeTokenExpirationDate)
+            if let unwrappedDate: String = dateAsString {
+                return Date(dateString: unwrappedDate)
+            } else {
+                return nil
+            }
+        }
+        set(value) {
+            if let unwrappedValue = value {
+                _ = self.keychain.save(key: self.accountId, tokenType: .HeTokenExpirationDate, value: unwrappedValue.toString())
+            } else {
+                _ = self.keychain.delete(key: self.accountId, tokenType: .HeTokenExpirationDate)
+            }
+        }
+    }
+    
+    /**
+    The header enrichment token. The information is read securely from Keychain.
+     */
+    public var heToken: String? {
+        get {
+            return self.keychain.read(userAccount: self.accountId, tokenType: .HeToken)
+        }
+        set(value) {
+            if let unwrappedValue = value {
+                _ = self.keychain.save(key: self.accountId, tokenType: .HeToken, value: unwrappedValue)
+            } else {
+                _ = self.keychain.delete(key: self.accountId, tokenType: .HeToken)
+            }
+        }
+    }
 
     private let keychain: KeychainWrap
 
@@ -315,6 +354,13 @@ public class TrustedPersistentOAuth2Session: OAuth2Session {
         return self.refreshTokenExpirationDate != nil
             ? (self.refreshTokenExpirationDate!.timeIntervalSince(Date()) > 0)
             : refreshToken != nil
+    }
+    
+    /**
+    Check validity of heToken. return true if still valid, false when expired.
+    */
+    public func heTokenIsNotExpired() -> Bool {
+        return self.heTokenExpirationDate != nil ? (self.heTokenExpirationDate!.timeIntervalSince(Date()) > 0) : true
     }
 
     /**
@@ -335,6 +381,20 @@ public class TrustedPersistentOAuth2Session: OAuth2Session {
             self.refreshTokenExpirationDate = now.addingTimeInterval(inter) as Date
         }
     }
+    
+    /**
+    Save in memory he token information.
+    */
+    public func saveHeToken(heToken: String, heTokenExpiration: String) {
+        var seconds: Double;
+        if let sec = Double(heTokenExpiration) {
+            seconds = sec/1000;
+        } else {
+            seconds = 60;
+        }
+        self.heToken = heToken
+        self.heTokenExpirationDate = Date().addingTimeInterval(seconds) as Date
+    }
 
     /**
     Clear all tokens. Method used when doing logout or revoke.
@@ -342,8 +402,10 @@ public class TrustedPersistentOAuth2Session: OAuth2Session {
     public func clearTokens() {
         self.accessToken = nil
         self.refreshToken = nil
+        self.heToken = nil
         self.accessTokenExpirationDate = nil
         self.refreshTokenExpirationDate = nil
+        self.heTokenExpirationDate = nil
         self.idToken = nil
     }
 
@@ -363,7 +425,9 @@ public class TrustedPersistentOAuth2Session: OAuth2Session {
         accessTokenExpirationDate: Date? = nil,
         refreshToken: String? = nil,
         refreshTokenExpirationDate: Date? = nil,
-        idToken: String? = nil) {
+        idToken: String? = nil,
+        heToken: String? = nil,
+        heTokenExpirationDate: Date? = nil) {
             self.accountId = accountId
             if groupId != nil {
                 self.keychain = KeychainWrap(serviceId: groupId, groupId: groupId)
@@ -389,6 +453,12 @@ public class TrustedPersistentOAuth2Session: OAuth2Session {
             
             if idToken != nil {
                 self.idToken = idToken
+            }
+            if heToken != nil {
+                self.heToken = heToken
+            }
+            if heTokenExpirationDate != nil {
+                self.heTokenExpirationDate = heTokenExpirationDate
             }
     }
 }

@@ -25,6 +25,19 @@ public enum IdProvider {
         }
     }
     
+    func getInstantVerificationUrl(useStaging: Bool) -> String {
+        switch self {
+            case .connectId:
+                return useStaging ? "https://connect.staging.telenordigital.com" : "https://connect.telenordigital.com";
+            case .telenorId:
+                return useStaging ? "https://signin.telenorid-staging.com" : "https://signin.telenorid.com";
+            case .gpId:
+                return useStaging ? "https://signin.gp-id-staging.com" : "https://signin.gp-id.com";
+            case .dtacId:
+                return useStaging ? "https://signin.dtac-id-staging.com" : "https://signin.dtac-id.com";
+        }
+    }
+    
     func getUrl(useStaging: Bool) -> String {
         switch self {
             case .connectId:

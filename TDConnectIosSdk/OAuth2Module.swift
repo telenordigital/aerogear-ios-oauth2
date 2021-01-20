@@ -49,6 +49,16 @@ public enum OAuth2Error: Error {
     case UnequalStateParameter(String)
 }
 
+public enum InstantVerificationError: Error {
+    case InvalidNetworkParameters(String)
+    case PrepareUrlConstructionError(String)
+    case FundamentalNetworkError(String)
+    case InvalidResponseCode(String)
+    case GifUrlConstructionError(String)
+    case EmptyGifResponseError(String)
+    case JsonParsingError(String)
+}
+
 public enum BrowserType {
     case safariViewController
     case webAuthenticationSession
@@ -186,6 +196,73 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
     // MARK: Public API - To be overriden if necessary by OAuth2 specific adapter
     
     /**
+    Try to perform instant verification functionality. In case of success, sysyem will store
+     */
+    public func runInstantVerification(completion: @escaping (_ success: Bool, _ error: Error?) -> Void) {
+        if (!ForcedHEManager.isCellularEnabled() ||
+            (ForcedHEManager.isCellularEnabled() && ForcedHEManager.isWifiEnabled())) {
+            completion(false, InstantVerificationError.InvalidNetworkParameters("Instant verification can be performed if only cellular network is available. Wifi is dropped for security reasons to prevent hotspot fraud.") as NSError)
+            return;
+        }
+        
+        self.logSessionId = self.logSessionId ?? NSUUID().uuidString;
+        guard let tokenUrl = URL(string: self.config.idProvider.getInstantVerificationUrl(useStaging: self.config.useStaging)
+            + "/v2/extapi/v1/header-enrichment-token/"
+            + self.logSessionId!) else {
+                completion(false, InstantVerificationError.PrepareUrlConstructionError("A problem occured while constructing tokenUrl. Ensure that you provide proper idProvider and useStaging parameters to the config.") as NSError)
+                return;
+        };
+        let urlSession = URLSession.shared;
+        
+        urlSession.dataTask(with: tokenUrl) { data, response, error in
+            guard let data = data, error == nil else {
+                // Check for fundamental networking error
+                completion(false, InstantVerificationError.FundamentalNetworkError("A problem occured while trying to make a prepare request. Error = \(String(describing: error))") as NSError)
+                return;
+            }
+            
+            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
+                // Check for http errors
+                completion(false, InstantVerificationError.InvalidResponseCode("A problem occured while trying to make a prepare request. StatusCode should be 200, but is \(httpStatus.statusCode). Response = \(String(describing: response))") as NSError)
+                return;
+            }
+            
+            do {
+                let responseJson = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
+                let heTokenResponse = HeTokenResponse(token: responseJson["heToken"] as! String, expiration: (responseJson["exp"]?.stringValue)!, gifUrl: responseJson["gifUrl"] as! String);
+                guard let gifUrl = URL(string: heTokenResponse.gifUrl) else {
+                        completion(false, InstantVerificationError.GifUrlConstructionError("A problem occured while constructing gifUrl.") as NSError)
+                        return;
+                };
+                urlSession.dataTask(with: gifUrl) { data, response, error in
+                    guard let data = data, error == nil else {
+                        // Check for fundamental networking error
+                        completion(false, InstantVerificationError.FundamentalNetworkError("A problem occured while trying to make a gif request. Error = \(String(describing: error))") as NSError)
+                        return;
+                    }
+                    
+                    if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {
+                        // Check for http errors
+                        completion(false, InstantVerificationError.InvalidResponseCode("A problem occured while trying to make a gif request. StatusCode should be 200, but is \(httpStatus.statusCode). Response = \(String(describing: response))") as NSError)
+                        return;
+                    }
+
+                    if (data.isEmpty) {
+                        completion(false, InstantVerificationError.EmptyGifResponseError("A problem occured while trying to make a gif request. The gif response is empty.") as NSError)
+                        return;
+                    }
+                    self.oauth2Session.saveHeToken(heToken: heTokenResponse.token, heTokenExpiration: heTokenResponse.expiration)
+                    print("Expiration date: " + (self.oauth2Session.heTokenExpirationDate?.toString())!);
+                    completion(true, nil)
+                }.resume();
+            } catch {
+                completion(false, InstantVerificationError.JsonParsingError("A problem occured while trying to make a prepare request. Result json is not valid. Error = \(error.localizedDescription)") as NSError)
+                return;
+            }
+        }.resume();
+    }
+    
+    /**
     Request an authorization code.
 
     :param: completionHandler A block object to be executed when the request operation finishes.
@@ -212,7 +289,11 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         // get the user agent we will use for authentication
         self.browserType = getBrowserTypeToUse();
 
-        self.logSessionId = NSUUID().uuidString
+        self.logSessionId = self.logSessionId ?? NSUUID().uuidString
+        
+        if (oauth2Session.heToken != nil && oauth2Session.heTokenIsNotExpired()) {
+            config.optionalParams!["telenordigital_he_token"] = oauth2Session.heToken;
+        }
 
         // This feature was used in webviews only, that are currently not supported.
         // Cause should be revisited afterwards

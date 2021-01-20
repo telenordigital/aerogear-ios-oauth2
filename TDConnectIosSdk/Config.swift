@@ -148,8 +148,18 @@ open class Config {
      This variable will expect to see ASWebAuthenticationPresentationContextProviding, the Any? type is put because of iOS versions compability
      */
     open var viewControllerContext: Any?
+    
+    /**
+    Identity provider to use during the sign in process.
+     */
+    open var idProvider: IdProvider
+    
+    /**
+    Boolean to indicate if staging or production environment should be used during the sign in process.
+     */
+    open var useStaging: Bool = false
 
-    public init(base: String, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, wellKnownConfigurationEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, logOutEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, claims: Set<String>? = nil, optionalParams: [String: String]? = nil, isPublicClient: Bool = true, viewControllerContext: Any? = nil) {
+    public init(base: String, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, wellKnownConfigurationEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, logOutEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, claims: Set<String>? = nil, optionalParams: [String: String]? = nil, isPublicClient: Bool = true, viewControllerContext: Any? = nil, idProvider: IdProvider = IdProvider.connectId, useStaging: Bool = false) {
         self.baseURL = base
         self.authzEndpoint = authzEndpoint
         self.redirectURL = redirectURL
@@ -169,5 +179,7 @@ open class Config {
         self.optionalParams = optionalParams
         self.isPublicClient = isPublicClient
         self.viewControllerContext = viewControllerContext
+        self.idProvider = idProvider
+        self.useStaging = useStaging
     }
 }

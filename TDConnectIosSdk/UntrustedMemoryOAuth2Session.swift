@@ -56,7 +56,17 @@ open class UntrustedMemoryOAuth2Session: OAuth2Session {
     The JWT which expires.
     */
     open var idToken: String?
-
+    
+    /**
+    The header enrichment token.
+     */
+    public var heToken: String?
+    
+    /**
+    The heToken expiration date.
+     */
+    public var heTokenExpirationDate: Date?
+    
     /**
     Check validity of accessToken. return true if still valid, false when expired.
     */
@@ -71,6 +81,10 @@ open class UntrustedMemoryOAuth2Session: OAuth2Session {
         return self.refreshTokenExpirationDate != nil
             ? (self.refreshTokenExpirationDate!.timeIntervalSince(Date()) > 0)
             : refreshToken != nil
+    }
+    
+    open func heTokenIsNotExpired() -> Bool {
+        return self.heTokenExpirationDate != nil ? (self.heTokenExpirationDate!.timeIntervalSince(Date()) > 0) : true
     }
 
     /**
@@ -92,6 +106,20 @@ open class UntrustedMemoryOAuth2Session: OAuth2Session {
     }
 
     /**
+    Save in memory he token information.
+    */
+    public func saveHeToken(heToken: String, heTokenExpiration: String) {
+        var seconds: Double;
+        if let sec = Double(heTokenExpiration) {
+            seconds = sec/1000;
+        } else {
+            seconds = 60;
+        }
+        self.heToken = heToken
+        self.heTokenExpirationDate = Date().addingTimeInterval(seconds) as Date
+    }
+    
+    /**
     Clear all tokens. Method used when doing logout or revoke.
     */
     open func clearTokens() {
@@ -100,6 +128,8 @@ open class UntrustedMemoryOAuth2Session: OAuth2Session {
         self.accessTokenExpirationDate = nil
         self.refreshTokenExpirationDate = nil
         self.idToken = nil
+        self.heToken = nil
+        self.heTokenExpirationDate = nil
     }
 
     /**
@@ -112,12 +142,14 @@ open class UntrustedMemoryOAuth2Session: OAuth2Session {
     :param: refreshTokenExpirationDate optional parameter to initialize the storage with initial values.
     :param: idToken optional parameter to initialize the storage with initial values.
     */
-    public init(accountId: String, accessToken: String? = nil, accessTokenExpirationDate: Date? = nil, refreshToken: String? = nil, refreshTokenExpirationDate: Date? = nil, idToken: String? = nil) {
+    public init(accountId: String, accessToken: String? = nil, accessTokenExpirationDate: Date? = nil, refreshToken: String? = nil, refreshTokenExpirationDate: Date? = nil, idToken: String? = nil, heToken: String? = nil, heTokenExpirationDate: Date? = nil) {
         self.accessToken = accessToken
         self.accessTokenExpirationDate = accessTokenExpirationDate
         self.refreshToken = refreshToken
         self.refreshTokenExpirationDate = refreshTokenExpirationDate
         self.accountId = accountId
         self.idToken = idToken
+        self.heToken = heToken
+        self.heTokenExpirationDate = heTokenExpirationDate
     }
 }
