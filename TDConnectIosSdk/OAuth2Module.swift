@@ -373,9 +373,9 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             }
         }
 
-        let deviceId = UIDevice.current.identifierForVendor?.uuidString
         var params = "?scope=\(config.scopesEncoded)&redirect_uri=\(config.redirectURL.urlEncode())&client_id=\(config.clientId)&response_type=code&telenordigital_sdk_version=ios_\(version)"
-        if (deviceId != nil) {
+        
+        if let deviceId = UIDevice.current.identifierForVendor?.uuidString {
             params += "&telenordigital_did=\(deviceId)"
         }
         if let optionalParamsEncoded = optionalParamsEncoded {
@@ -402,7 +402,6 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             let error = NSError(domain:AGAuthzErrorDomain, code:0, userInfo:["NSLocalizedDescriptionKey": "Malformatted URL."])
             throw error
         }
-        
         return URL(string:computedUrl.absoluteString + params)!
     }
     
