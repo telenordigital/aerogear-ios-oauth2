@@ -164,6 +164,32 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
         if (config.wellKnownConfigurationEndpoint != nil) {
             self.fetchWellknownConfig()
         }
+        
+        handlePossibleIdpChange();
+    }
+    
+    func handlePossibleIdpChange() {
+        if (self.oauth2Session.idToken == nil) {
+            return;
+        }
+        
+        var token: Payload
+        do {
+            token = try JWT.decode(self.oauth2Session.idToken!, algorithm: .none, verify: false, audience: self.config.clientId, issuer: self.config.baseURL)
+        } catch {
+            self.oauth2Session.clearTokens();
+            return;
+        }
+        
+        guard let issuer = token["iss"] as? String else {
+            self.oauth2Session.clearTokens();
+            return;
+        }
+        
+        if issuer != self.config.baseURL {
+            self.oauth2Session.clearTokens();
+            return;
+        }
     }
 
     func fetchWellknownConfig() {
