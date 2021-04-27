@@ -125,6 +125,21 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
     var tsTokenResponseReceived: Int64?
 
     /**
+     Queue of completion handlers for the refreshAccessToken(completionHandler:) method.
+     This queue prevents rapid successive refresh requests from using the old invalidated
+     refresh token.
+
+     If refreshAccessToken(completionHandler:) is called multiple times in different places
+     at virtually the same time, the request that finishes first will succeed whereas the other
+     ones will fail since the refresh token the other ones used was invalidated when the request
+     that finished first, succeeded.
+
+     This queue makes sure that only the result of the first request is returned to the different
+     callers that called the refresh token method while a token-refresh was already in progress.
+     */
+    private var refreshAccessTokenHandlers = [(AnyObject?, NSError?) -> Void]()
+
+    /**
     Initialize an OAuth2 module.
 
     :param: config the configuration object that setups the module.
@@ -499,26 +514,53 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             return
         }
 
-        var paramDict: [String: String] = ["refresh_token": unwrappedRefreshToken, "client_id": config.clientId, "grant_type": "refresh_token"]
+        var paramDict: [String: String] = [
+            "refresh_token": unwrappedRefreshToken,
+            "client_id": config.clientId,
+            "grant_type": "refresh_token"
+        ]
+
         if (config.clientSecret != nil) {
             paramDict["client_secret"] = config.clientSecret!
         }
-        
+
+        guard refreshAccessTokenHandlers.isEmpty else {
+            // If the queue isn't empty, it means that a refresh request
+            // is already in progress. Any successive #refreshAccessToken
+            // calls will wait for the first request to complete, after which
+            // all the queued completion handlers will be invoked with the
+            // result of the first request.
+            refreshAccessTokenHandlers.append(completionHandler)
+            return
+        }
+
+        refreshAccessTokenHandlers.append(completionHandler)
+
+        // Invokes all the queued handlers once the first request finishes
+        // (either with a token or an error)
+        func invokeCompletionHandlers(accessToken: AnyObject?, error: NSError?) {
+            let handlers = self.refreshAccessTokenHandlers
+            self.refreshAccessTokenHandlers = []
+            handlers.forEach({ (completion) in
+                completion(accessToken, error)
+            })
+        }
+
         http.request(method: .post, path: config.refreshTokenEndpoint!, parameters: paramDict as [String : AnyObject]?, completionHandler: { (response, error) in
             if (error != nil) {
                 if error?.code == 400 {
                     self.oauth2Session.clearTokens()
                 }
-                
-                completionHandler(nil, error)
+                invokeCompletionHandlers(accessToken: nil, error: error)
                 return
             }
-            
+
             guard let unwrappedResponse = response as? [String: AnyObject] else {
-                completionHandler(nil, OAuth2Error.UnexpectedResponse(response as! String) as NSError)
+                let error = OAuth2Error.UnexpectedResponse(response as! String) as NSError
+                invokeCompletionHandlers(accessToken: nil, error: error)
                 return
             }
-            
+
             let accessToken: String = unwrappedResponse["access_token"] as! String
             let expiration = unwrappedResponse["expires_in"] as! NSNumber
             let exp: String = expiration.stringValue
@@ -526,10 +568,14 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             if let newRefreshToken = unwrappedResponse["refresh_token"] as? String {
                 refreshToken = newRefreshToken
             }
-            
-            self.oauth2Session.save(accessToken: accessToken, refreshToken: refreshToken, accessTokenExpiration: exp, refreshTokenExpiration: nil, idToken: nil)
-            
-            completionHandler(unwrappedResponse["access_token"], nil);
+
+            self.oauth2Session.save(accessToken: accessToken,
+                                    refreshToken: refreshToken,
+                                    accessTokenExpiration: exp,
+                                    refreshTokenExpiration: nil,
+                                    idToken: nil)
+
+            invokeCompletionHandlers(accessToken: accessToken as AnyObject, error: nil)
         })
     }
 
@@ -630,10 +676,10 @@ open class OAuth2Module: NSObject, AuthzModule, SFSafariViewControllerDelegate {
             }
 
             self.oauth2Session.save(accessToken: accessToken,
-                refreshToken: refreshToken,
-                accessTokenExpiration: exp,
-                refreshTokenExpiration: expRefresh,
-                idToken: idToken)
+                                    refreshToken: refreshToken,
+                                    accessTokenExpiration: exp,
+                                    refreshTokenExpiration: expRefresh,
+                                    idToken: idToken)
 
             let idTokenPayload = self.getIdTokenPayload()
             let subjectId = idTokenPayload?["sub"] as? String
